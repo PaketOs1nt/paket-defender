@@ -3,6 +3,7 @@ from watchdog.observers import Observer
 
 import threading
 import datetime
+import secrets
 import modules
 import winreg
 import time
@@ -19,11 +20,15 @@ file_paths = [
 ]
 
 registry_paths = {
-    "HKEY_CURRENT_USER": r"Software\Microsoft\Windows\CurrentVersion\Run",
-    "HKEY_LOCAL_MACHINE": r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"
+    "HKEY_CURRENT_USER": [
+        r"Software\Microsoft\Windows\CurrentVersion\Run",
+        r"Software\Microsoft\Windows\CurrentVersion\RunOnce"
+    ],
+    "HKEY_LOCAL_MACHINE": [
+        r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
+        r"SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce"
+    ]
 }
-
-
 
 class MonitorAutoruns(FileSystemEventHandler):
     def on_modified(self, event):
@@ -39,22 +44,23 @@ for path in file_paths:
 def reg_get_autoruns():
     autostart_entries = {}
 
-    for hive, subkey in registry_paths.items():
-        try:
-            with winreg.OpenKey(getattr(winreg, hive), subkey) as key:
-                entries = {}
-                i = 0
-                while True:
-                    try:
-                        name, value, _ = winreg.EnumValue(key, i)
-                        entries[name] = value
-                        i += 1
-                    except OSError:
-                        break
+    for hive, subkeys in registry_paths.items():
+        for subkey in subkeys:
+            try:
+                with winreg.OpenKey(getattr(winreg, hive), subkey) as key:
+                    entries = {}
+                    i = 0
+                    while True:
+                        try:
+                            name, value, _ = winreg.EnumValue(key, i)
+                            entries[name] = value
+                            i += 1
+                        except OSError:
+                            break
 
-                autostart_entries[hive] = entries
-        except:
-            autostart_entries[hive] = None
+                    autostart_entries[hive+'.'+subkey] = entries
+            except:
+                autostart_entries[hive] = None
     
     return autostart_entries
 
@@ -79,9 +85,18 @@ def reg_checknew():
 
 def run_regcheck():
     while True:
-        time.sleep(REG_AUTORUN_CHECK_TIMEOUT)
-        reg_checknew()
+        try:
+            time.sleep(REG_AUTORUN_CHECK_TIMEOUT)
+            nreg = reg_checknew()
+            for a, b in nreg.items():
+                if b != {}:
+                    for resultn, resultd in b.items():
+                        modules.base.notify(f'Autoruns (created): {resultn} ({resultd}) [{datetime.datetime.now()}]')
+                        time.sleep(2)
+
+        except BaseException as e:
+            print(e)
 
 def run():
     observer.start()
-    threading.Thread(target=reg_checknew, daemon=True).start()
+    threading.Thread(target=run_regcheck, daemon=True).start()

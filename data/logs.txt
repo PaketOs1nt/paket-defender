@@ -1,0 +1,5 @@
+Autoruns (created): Новый параметр #1 (HKEY_CURRENT_USER | "") [2024-12-11 11:47:37.703240]
+Autoruns (created): RtkAudUService ("C:\Windows\System32\DriverStore\FileRepository\realtekservice.inf_amd64_04ff63d068f8c626\RtkAudUService64.exe" -background) [2024-12-11 11:57:16.779740]
+Autoruns (created): RtkAudUService ("C:\Windows\System32\DriverStore\FileRepository\realtekservice.inf_amd64_04ff63d068f8c626\RtkAudUService64.exe" -background) [2024-12-11 11:57:21.986518]
+Autoruns (created): Новый параметр #1 () [2024-12-11 11:58:18.482887]
+Autoruns (created): Новый параметр #1 () [2024-12-11 11:58:32.690642]
