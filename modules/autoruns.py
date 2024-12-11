@@ -4,8 +4,11 @@ from watchdog.observers import Observer
 import datetime
 import modules
 import os
-datetime.time
+
 name = os.getlogin()
+
+with open('config/REG_AUTORUN_CHECK_TIMEOUT', 'r') as f:
+    REG_AUTORUN_CHECK_TIMEOUT = int(f.read())
 
 paths = [
     r'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp',
